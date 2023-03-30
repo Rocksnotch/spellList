@@ -2,6 +2,7 @@ import requests
 import sys
 from xml.dom import minidom
 from bs4 import BeautifulSoup
+import time
 
 schools = ["Conjuration", "Necromancy", "Evocation", "Abjuration", "Transmutation", "Divination", "Enchantment", "Illusion"]
 spellType = ["Cantrip", "1st Level", "2nd Level", "3rd Level", "4th Level", "5th Level", "6th Level", "7th Level", "8th Level", "9th Level"]
@@ -12,6 +13,8 @@ spellTemp = 0
 currentLen = 0
 
 spellDetails = []
+spellDesc = []
+baseURL = "http://dnd5e.wikidot.com"
 
 url = "http://dnd5e.wikidot.com/spells"
 page = requests.get(url)
@@ -48,7 +51,29 @@ while (indexType < 10): #Goes thru Cantrip to 9th level
         spellTemp = 0
         
         #Process the data here, stored in list 'spellDetails'
+        #FIRST attempt to grab all the spell desc from their own page
+        #will be stored in 'spellDesc'
         
+        spellLink = wikiDiv.find_all("a", href=True)
+        
+        spellPage = spellLink[indexSpell - 1]['href']
+        spellURL = baseURL + spellPage
+        
+        spellLookup = requests.get(spellURL)
+        
+        spellSoup = BeautifulSoup(spellLookup.content, "html.parser")
+        
+        holdOne = spellSoup.find("div", id= "page-content")
+        
+        allP = holdOne.find_all("p")
+        
+        spellSource = allP[0].text.replace("Source: ", "")
+        
+        
+        
+        print(allP[5])
+        
+        #THEN grab the main spell parts
         dom = minidom.parse(r"spellList.xml")
         
         newSpell = dom.createElement("Spell")
@@ -73,6 +98,11 @@ while (indexType < 10): #Goes thru Cantrip to 9th level
                 schoolPick = dom.getElementsByTagName("School")[7]
         
         schoolPick.appendChild(newSpell)
+        
+        spellSrc = dom.createElement("Source")
+        srcTxt = dom.createTextNode(spellSource)
+        spellSrc.appendChild(srcTxt)
+        newSpell.appendChild(spellSrc)
         
         spellLvl = dom.createElement("Level")
         lvlTxt = dom.createTextNode(spellType[indexType])
