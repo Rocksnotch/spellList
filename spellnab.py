@@ -43,7 +43,6 @@ while (indexType < 10): #Goes thru Cantrip to 9th level
     while (indexSpell < currentLen): #Goes thru all spells in current spell tab
         spellsInList = tableRefs[indexSpell].find_all("td")
         while (spellTemp < 6): #Goes thru all spell elements
-            print(spellsInList[spellTemp].text, file=open("testHold.txt", "a"))
             spellDetails.append(spellsInList[spellTemp].text)
             spellTemp += 1
         spellTemp = 0
