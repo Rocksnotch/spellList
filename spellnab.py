@@ -11,9 +11,12 @@ indexSpell = 1
 indexType = 0
 spellTemp = 0
 currentLen = 0
+pIndex = 3
 
 spellDetails = []
-spellDesc = []
+spellDesc = ""
+spellSource = ""
+spellComp = ""
 baseURL = "http://dnd5e.wikidot.com"
 
 url = "http://dnd5e.wikidot.com/spells"
@@ -65,14 +68,37 @@ while (indexType < 10): #Goes thru Cantrip to 9th level
         
         holdOne = spellSoup.find("div", id= "page-content")
         
-        allP = holdOne.find_all("p")
+        allChild = holdOne.findChildren(recursive=False)
         
-        spellSource = allP[0].text.replace("Source: ", "")
+        componentSpell = allChild[3].text.split()
         
+        componentItems = ""
         
+        for x, y in enumerate(componentSpell):
+            if (y == "V," or y == "V"):
+                componentItems += "V"
+            if (y == "S," or y == "S"):
+                if (componentItems != ""):
+                    componentItems += ", S"
+                else:
+                    componentItems += "S"
+            if (y == "M"):
+                componentItems += ", M " 
+                componentIndex = x + 1 
+                while (componentSpell[componentIndex] != "Duration:"):
+                    if (componentSpell[componentIndex + 1] != "Duration:"):
+                        componentItems += componentSpell[componentIndex] + " "
+                    else:
+                        componentItems += componentSpell[componentIndex]
+                    
+                    componentIndex += 1
+            
+        if "At Higher Levels." in str(allChild[len(allChild) - 3]):
+            print("")
+        else:
+            print("")
         
-        print(allP[5])
-        
+
         #THEN grab the main spell parts
         dom = minidom.parse(r"spellList.xml")
         
@@ -125,9 +151,13 @@ while (indexType < 10): #Goes thru Cantrip to 9th level
         newSpell.appendChild(spellDur)
         
         spellComp = dom.createElement("Components")
-        compTxt = dom.createTextNode(spellDetails[5])
+        compTxt = dom.createTextNode(componentItems)
         spellComp.appendChild(compTxt)
         newSpell.appendChild(spellComp)
+        
+        #HERE we process the spell desc
+        
+        #Handle appending all of this info to the XML Doc
         
         def pretty_print(dom):
             return '\n'.join([line for line in dom.toprettyxml(indent=' '*4).split('\n') if line.strip()])
